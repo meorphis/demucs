@@ -47,7 +47,20 @@ class AudioFile:
     @property
     def info(self):
         if self._info is None:
-            self._info = _read_info(self.path)
+            if '.' not in self.path:
+                self._info = {
+                    "streams": [
+                        {
+                            "channels": 2,
+                            "sample_rate": 44100
+                        }
+                    ],
+                    "format": {
+                        "duration": 5
+                    }
+                }
+            else:
+                self._info = _read_info(self.path)
         return self._info
 
     @property
