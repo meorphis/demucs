@@ -14,6 +14,7 @@ from . import audio_legacy
 import torch
 import torchaudio as ta
 import typing as tp
+import urllib
 
 from .utils import temp_filenames
 
@@ -108,14 +109,16 @@ class AudioFile:
             target_size = int((samplerate or self.samplerate()) * duration)
             query_duration = float((target_size + 1) / (samplerate or self.samplerate()))
 
+        is_raw = '.' not in self.path
+                 
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
             command += ['-loglevel', 'panic']
             if seek_time:
                 command += ['-ss', str(seek_time)]
-            command += ['-i', str(self.path)]
-            if not '.' in self.path:
+            if is_raw:
                 command += ['-f', 'f32le']
+            command += ['-i', '-' if is_raw else str(self.path)]
             for stream, filename in zip(streams, filenames):
                 command += ['-map', f'0:{self._audio_streams[stream]}']
                 if query_duration is not None:
@@ -126,7 +129,16 @@ class AudioFile:
                     command += ['-ar', str(samplerate)]
                 command += [filename]
 
-            sp.run(command, check=True)
+            if is_raw:
+                parsed_url = urllib.parse.urlparse(self.path)
+                if parsed_url.scheme != 'data':
+                    raise ValueError("Invalid data URL")
+                encoded_data = parsed_url.path.split(',')[1]
+                audio_data = base64.b64decode(encoded_data)
+                process = sp.Popen(command, stdin=sp.PIPE)
+                process.communicate(input=audio_data)
+            else:
+                sp.run(command, check=True)
             wavs = []
             for filename in filenames:
                 wav = np.fromfile(filename, dtype=np.float32)
