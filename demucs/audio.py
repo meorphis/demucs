@@ -118,7 +118,7 @@ class AudioFile:
                 command += ['-ss', str(seek_time)]
             if is_raw:
                 command += ['-f', 'f32le']
-            command += ['-i', '-' if is_raw else str(self.path)]
+            command += ['-i', str(self.path)]
             for stream, filename in zip(streams, filenames):
                 command += ['-map', f'0:{self._audio_streams[stream]}']
                 if query_duration is not None:
@@ -129,16 +129,7 @@ class AudioFile:
                     command += ['-ar', str(samplerate)]
                 command += [filename]
 
-            if is_raw:
-                parsed_url = urllib.parse.urlparse(self.path)
-                if parsed_url.scheme != 'data':
-                    raise ValueError("Invalid data URL")
-                encoded_data = parsed_url.path.split(',')[1]
-                audio_data = base64.b64decode(encoded_data)
-                process = sp.Popen(command, stdin=sp.PIPE)
-                process.communicate(input=audio_data)
-            else:
-                sp.run(command, check=True)
+            sp.run(command, check=True)
             wavs = []
             for filename in filenames:
                 wav = np.fromfile(filename, dtype=np.float32)
