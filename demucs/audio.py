@@ -114,6 +114,8 @@ class AudioFile:
             if seek_time:
                 command += ['-ss', str(seek_time)]
             command += ['-i', str(self.path)]
+            if not '.' in self.path:
+                command += ['-f', 'f32le']
             for stream, filename in zip(streams, filenames):
                 command += ['-map', f'0:{self._audio_streams[stream]}']
                 if query_duration is not None:
