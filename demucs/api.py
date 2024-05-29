@@ -217,8 +217,8 @@ class Separator:
                                         channels=self._audio_channels)
         except FileNotFoundError:
             errors["ffmpeg"] = "FFmpeg is not installed."
-        except subprocess.CalledProcessError:
-            errors["ffmpeg"] = "FFmpeg could not read the file."
+        except subprocess.CalledProcessError as err:
+            errors["ffmpeg"] = "FFmpeg could not read the file: {}".format(repr(err))
 
         if wav is None:
             try:
