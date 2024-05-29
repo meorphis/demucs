@@ -47,7 +47,7 @@ class AudioFile:
     @property
     def info(self):
         if self._info is None:
-            if '.' not in self.path:
+            if self.path.suffix == "":
                 self._info = {
                     "streams": [
                         {
@@ -122,7 +122,7 @@ class AudioFile:
             target_size = int((samplerate or self.samplerate()) * duration)
             query_duration = float((target_size + 1) / (samplerate or self.samplerate()))
 
-        is_raw = '.' not in self.path
+        is_raw = self.path.suffix == ""
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
