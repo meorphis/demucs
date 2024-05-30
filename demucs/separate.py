@@ -101,6 +101,18 @@ def get_parser():
                         type=int,
                         help="Number of jobs. This can increase memory usage but will "
                              "be much faster when multiple cores are available.")
+    parser.add_argument("--input-sample-rate",
+                    default=48000,
+                    type=int,
+                    help="Sample rate of the input audio - only relevant for raw audio")
+    parser.add_argument("--input-num-channels",
+                    default=2,
+                    type=int,
+                    help="Number of channels in the input audio - only relevant for raw audio")
+    parser.add_argument("--input-duration",
+                    default=5000,
+                    type=int,
+                    help="Duration of the input audio in milliseconds - only relevant for raw audio")
 
     return parser
 
@@ -165,7 +177,16 @@ def main(opts=None):
             continue
         print(f"Separating track {track}")
 
-        origin, res = separator.separate_audio_file(track)
+        kwargs = {}
+
+        if args.input_sample_rate:
+            kwargs["sample_rate"] = args.input_sample_rate
+        if args.input_num_channels:
+            kwargs["num_channels"] = args.input_num_channels
+        if args.input_duration:
+            kwargs["duration"] = args.input_duration
+
+        origin, res = separator.separate_audio_file(track, **kwargs)
 
         if args.mp3:
             ext = "mp3"
