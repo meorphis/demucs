@@ -32,9 +32,23 @@ class AudioFile:
     Allows to read audio from any format supported by ffmpeg, as well as resampling or
     converting to mono on the fly. See :method:`read` for more details.
     """
-    def __init__(self, path: Path):
+    def __init__(self, path: Path, num_channels=2, sample_rate=48000, duration=5000):
         self.path = Path(path)
-        self._info = None
+        if self.path.suffix == "":
+            self._info = {
+                "streams": [
+                    {
+                        "channels": num_channels,
+                        "sample_rate": sample_rate,
+                        "codec_type": "audio"
+                    }
+                ],
+                "format": {
+                    "duration": duration
+                }
+            }
+        else:
+            self._info = None
 
     def __repr__(self):
         features = [("path", self.path)]
@@ -47,21 +61,7 @@ class AudioFile:
     @property
     def info(self):
         if self._info is None:
-            if self.path.suffix == "":
-                self._info = {
-                    "streams": [
-                        {
-                            "channels": 2,
-                            "sample_rate": 48000,
-                            "codec_type": "audio"
-                        }
-                    ],
-                    "format": {
-                        "duration": 5
-                    }
-                }
-            else:
-                self._info = _read_info(self.path)
+            self._info = _read_info(self.path)
         return self._info
 
     @property
