@@ -52,7 +52,7 @@ class AudioFile:
                     "streams": [
                         {
                             "channels": 2,
-                            "sample_rate": 44100,
+                            "sample_rate": 48000,
                             "codec_type": "audio"
                         }
                     ],
