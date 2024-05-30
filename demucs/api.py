@@ -208,12 +208,12 @@ class Separator:
         self._audio_channels = self._model.audio_channels
         self._samplerate = self._model.samplerate
 
-    def _load_audio(self, track: Path):
+    def _load_audio(self, track: Path, **kwargs):
         errors = {}
         wav = None
 
         try:
-            wav = AudioFile(track).read(streams=0, samplerate=self._samplerate,
+            wav = AudioFile(track, **kwargs).read(streams=0, samplerate=self._samplerate,
                                         channels=self._audio_channels)
         except FileNotFoundError:
             errors["ffmpeg"] = "FFmpeg is not installed."
@@ -291,7 +291,7 @@ class Separator:
         wav += ref.mean()
         return (wav, dict(zip(self._model.sources, out[0])))
 
-    def separate_audio_file(self, file: Path):
+    def separate_audio_file(self, file: Path, **kwargs):
         """
         Separate an audio file. The method will automatically read the file.
 
@@ -305,7 +305,7 @@ class Separator:
         are the name of stems and values are separated waves. The original wave will have already
         been resampled.
         """
-        return self.separate_tensor(self._load_audio(file), self.samplerate)
+        return self.separate_tensor(self._load_audio(file, **kwargs), self.samplerate)
 
     @property
     def samplerate(self):
