@@ -177,16 +177,13 @@ def main(opts=None):
             continue
         print(f"Separating track {track}")
 
-        kwargs = {}
+        separate_kwargs = {
+            sample_rate: args.input_sample_rate,
+            duration: args.input_num_channels,
+            num_channels: args.input_duration,
+        }
 
-        if args.input_sample_rate:
-            kwargs["sample_rate"] = args.input_sample_rate
-        if args.input_num_channels:
-            kwargs["num_channels"] = args.input_num_channels
-        if args.input_duration:
-            kwargs["duration"] = args.input_duration
-
-        origin, res = separator.separate_audio_file(track, **kwargs)
+        origin, res = separator.separate_audio_file(track, **separate_kwargs)
 
         if args.mp3:
             ext = "mp3"
