@@ -178,9 +178,9 @@ def main(opts=None):
         print(f"Separating track {track}")
 
         separate_kwargs = {
-            sample_rate: args.input_sample_rate,
-            duration: args.input_num_channels,
-            num_channels: args.input_duration,
+            "sample_rate": args.input_sample_rate,
+            "duration": args.input_num_channels,
+            "num_channels": args.input_duration,
         }
 
         origin, res = separator.separate_audio_file(track, **separate_kwargs)
