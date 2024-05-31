@@ -34,7 +34,7 @@ class AudioFile:
     """
     def __init__(self, path: Path, num_channels=2, sample_rate=48000, duration=5000):
         self.path = Path(path)
-        if self.path.suffix == "":
+        if self.path.suffix == ".bin":
             self._info = {
                 "streams": [
                     {
@@ -123,7 +123,7 @@ class AudioFile:
             target_size = int((samplerate or self.samplerate()) * duration)
             query_duration = float((target_size + 1) / (samplerate or self.samplerate()))
 
-        is_raw = self.path.suffix == ""
+        is_raw = self.path.suffix == ".bin"
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
