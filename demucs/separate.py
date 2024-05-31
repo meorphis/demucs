@@ -102,17 +102,17 @@ def get_parser():
                         help="Number of jobs. This can increase memory usage but will "
                              "be much faster when multiple cores are available.")
     parser.add_argument("--input-sample-rate",
-                    default=48000,
-                    type=int,
-                    help="Sample rate of the input audio - only relevant for raw audio")
+                        default=48000,
+                        type=int,
+                        help="Sample rate of the input audio - only relevant for raw audio")
     parser.add_argument("--input-num-channels",
-                    default=2,
-                    type=int,
-                    help="Number of channels in the input audio - only relevant for raw audio")
+                        default=2,
+                        type=int,
+                        help="Number of channels in the input audio - only relevant for raw audio")
     parser.add_argument("--input-duration",
-                    default=5000,
-                    type=int,
-                    help="Duration of the input audio in milliseconds - only relevant for raw audio")
+                        default=5000,
+                        type=int,
+                        help="Duration of the input audio in milliseconds - only relevant for raw audio")
 
     return parser
 
