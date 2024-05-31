@@ -124,6 +124,10 @@ class AudioFile:
             query_duration = float((target_size + 1) / (samplerate or self.samplerate()))
 
         is_raw = self.path.suffix == ".bin"
+
+        if is_raw:
+            f = self.path.open()
+            raise Error("data: {}".format(f.read()[:1000]))
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
