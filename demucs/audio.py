@@ -127,7 +127,9 @@ class AudioFile:
 
         if is_raw:
             f = self.path.open('rb')
-            raise Exception("data: {}".format(f.read()[:1000]))
+            data = f.read()
+            half = int(len(data) / 2)
+            raise Exception("data: {} {} {}".format(data[:1000], data[half:half+1000], data[-1000:]))
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
