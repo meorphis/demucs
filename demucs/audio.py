@@ -149,7 +149,7 @@ class AudioFile:
             sp.run(command, check=True)
             wavs = []
             for filename in filenames:
-                pf = open(filename, "wb")
+                pf = open(filename, "rb")
                 pd = pf.read()
                 raise Exception("{} {} {} {} {}".format(
                     pd[-100:], self.channels(), self.samplerate(), channels, target_size   
