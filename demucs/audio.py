@@ -133,8 +133,8 @@ class AudioFile:
                 command += ['-ss', str(seek_time)]
             if is_raw:
                 command += ['-f', self.raw_format]
-                command += ['-ac', self.channels()]
-                command += ['-ar', self.samplerate()]
+                command += ['-ac', str(self.channels())]
+                command += ['-ar', str(self.samplerate())]
             command += ['-i', str(self.path)]
             for stream, filename in zip(streams, filenames):
                 command += ['-map', f'0:{self._audio_streams[stream]}']
