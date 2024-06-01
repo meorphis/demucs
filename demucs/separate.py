@@ -113,6 +113,9 @@ def get_parser():
                         default=5000,
                         type=int,
                         help="Duration of the input audio in milliseconds - only relevant for raw audio")
+    parser.add_argument("--input-raw-format",
+                        default="f32le",
+                        help="The data format - only relevant for raw audio")
 
     return parser
 
@@ -181,6 +184,7 @@ def main(opts=None):
             "sample_rate": args.input_sample_rate,
             "duration": args.input_num_channels,
             "num_channels": args.input_duration,
+            "raw_format": args.input_raw_format,
         }
 
         origin, res = separator.separate_audio_file(track, **separate_kwargs)
