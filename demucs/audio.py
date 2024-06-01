@@ -32,8 +32,9 @@ class AudioFile:
     Allows to read audio from any format supported by ffmpeg, as well as resampling or
     converting to mono on the fly. See :method:`read` for more details.
     """
-    def __init__(self, path: Path, num_channels=2, sample_rate=48000, duration=5000):
+    def __init__(self, path: Path, num_channels=2, sample_rate=48000, duration=5, raw_format='f32le'):
         self.path = Path(path)
+        self.raw_format = raw_format
         if self.path.suffix == ".bin":
             self._info = {
                 "streams": [
@@ -124,12 +125,6 @@ class AudioFile:
             query_duration = float((target_size + 1) / (samplerate or self.samplerate()))
 
         is_raw = self.path.suffix == ".bin"
-
-        if is_raw:
-            f = self.path.open('rb')
-            data = f.read()
-            half = int(len(data) / 2)
-            raise Exception("data: {} {} {}".format(data[:1000], data[half:half+1000], data[-1000:]))
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
@@ -137,7 +132,9 @@ class AudioFile:
             if seek_time:
                 command += ['-ss', str(seek_time)]
             if is_raw:
-                command += ['-f', 'f32le']
+                command += ['-f', self.raw_format]
+                command += ['-ac', self.channels()]
+                command += ['-ar', self.samplerate()]
             command += ['-i', str(self.path)]
             for stream, filename in zip(streams, filenames):
                 command += ['-map', f'0:{self._audio_streams[stream]}']
