@@ -126,8 +126,8 @@ class AudioFile:
         is_raw = self.path.suffix == ".bin"
 
         if is_raw:
-            f = self.path.open()
-            raise Exception("data: {}".format(f.read('rb')[:1000]))
+            f = self.path.open('rb')
+            raise Exception("data: {}".format(f.read()[:1000]))
                  
         with temp_filenames(len(streams)) as filenames:
             command = ['ffmpeg', '-y']
