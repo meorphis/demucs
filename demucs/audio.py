@@ -149,6 +149,11 @@ class AudioFile:
             sp.run(command, check=True)
             wavs = []
             for filename in filenames:
+                pf = open(filename, "wb")
+                pd = pf.read()
+                raise Exception("{} {} {} {} {}".format(
+                    pd[-100:], self.channels(), self.samplerate(), channels, target_size   
+                )
                 wav = np.fromfile(filename, dtype=np.float32)
                 wav = torch.from_numpy(wav)
                 wav = wav.view(-1, self.channels()).t()
