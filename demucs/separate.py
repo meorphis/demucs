@@ -110,9 +110,9 @@ def get_parser():
                         type=int,
                         help="Number of channels in the input audio - only relevant for raw audio")
     parser.add_argument("--input-duration",
-                        default=5000,
+                        default=5,
                         type=int,
-                        help="Duration of the input audio in milliseconds - only relevant for raw audio")
+                        help="Duration of the input audio in seconds - only relevant for raw audio")
     parser.add_argument("--input-raw-format",
                         default="f32le",
                         help="The data format - only relevant for raw audio")
@@ -182,8 +182,8 @@ def main(opts=None):
 
         separate_kwargs = {
             "sample_rate": args.input_sample_rate,
-            "duration": args.input_num_channels,
-            "num_channels": args.input_duration,
+            "duration": args.input_duration,
+            "num_channels": args.input_num_channels,
             "raw_format": args.input_raw_format,
         }
 
