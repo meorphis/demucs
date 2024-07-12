@@ -11,3 +11,4 @@ include mypy.ini
 include demucs/py.typed
 include demucs/remote/*.txt
 include demucs/remote/*.yaml
+include my_package/data/*.sf2

@@ -2,10 +2,13 @@ import tempfile
 from io import BytesIO
 from typing import Optional
 import concurrent.futures
+import time
+import pkg_resources
 
 import torch
 from cog import BasePredictor, Input, Path
 from torch.cuda import is_available as is_cuda_available
+import numpy as np
 
 from demucs.api import Separator
 from demucs.apply import BagOfModels
@@ -208,7 +211,7 @@ class Predictor(BasePredictor):
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = {
-                executor.submit(process_source, name, source, midify, kwargs, self.basic_pitch_model): name
+                executor.submit(process_source, name, source, midify, kwargs, self.basic_pitch_model, output_format): name
                 for name, source in outputs.items() if name in input_stems
             }
             
@@ -219,10 +222,12 @@ class Predictor(BasePredictor):
         
         return output_stems
 
-def process_source(name, source, midify, kwargs, basic_pitch_model):
+def process_source(name, source, midify, kwargs, basic_pitch_model, output_format):
     torch_data = source.cpu()
 
     if midify:
+        start_time = time.time()
+        print("Midifying", name)
         with tempfile.NamedTemporaryFile(suffix=".wav") as f:
             save_audio(torch_data, f.name, **kwargs)
 
@@ -234,19 +239,23 @@ def process_source(name, source, midify, kwargs, basic_pitch_model):
                 minimum_frequency=50,
                 maximum_frequency=30000
             )
+        print("Done midifying after", time.time() - start_time, "seconds")
 
+        start_time = time.time()
+        print("Synthesizing", name)
         samples = synthesize_midi(
             midi_data,
             torch_data.numpy(),
-            sf2_path="sound_fonts/gameboy.sf2",
+            sf2_path=pkg_resources.resource_filename('demucs', 'sound_fonts/gameboy.sf2'),
             program=(6 if name == "guitar" else 42),
             should_fill=False,
             fs=48000,
         )
+        print("Done synthesizing after", time.time() - start_time, "seconds")
 
-        torch_data = torch.from_numpy(samples).float()
+        torch_data = torch.from_numpy(samples.reshape(1, -1)).float()
 
-    with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:                
+    with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
         save_audio(torch_data, f.name, **kwargs)
         audio = BytesIO(open(f.name, "rb").read())
         

@@ -7,8 +7,8 @@ build:
     - "fluidsynth"
   python_version: "3.10"
   run:
-    - "pip3 install numpy==1.26.4"
-    - "pip3 install --no-cache-dir torch torchvision torchaudio diffq basic-pitch fluidsynth"
+    - "pip3 install --no-cache-dir numpy==1.26.4"
+    - "pip3 install --no-cache-dir torch torchvision torchaudio diffq basic-pitch pyFluidSynth"
     - "pip3 install -U --no-cache-dir git+https://github.com/meorphis/demucs#egg=demucs"
     # Locally caching models should provide a slight performance improvement
     # When building the image, we don't have access to the code, so have
