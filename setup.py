@@ -61,6 +61,9 @@ setup(
     },
     install_requires=REQUIRED,
     include_package_data=True,
+    package_data={
+        'demucs': ['sound_fonts/*.sf2'],
+    },
     entry_points={
         'console_scripts': ['demucs=demucs.separate:main'],
     },
