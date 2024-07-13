@@ -140,6 +140,10 @@ class Predictor(BasePredictor):
             default=False,
             description="Choose whether or not to midify the separated stems.",
         ),
+        midify_params: str = Input(
+            default='{"other": {"program": 6}, "vocals": {"program": 42}}',
+            description="Choose the parameters for midifying the separated stems.",
+        ),
         input_sample_rate: int = Input(
             default=44100,
             description="Choose the sample rate of the input audio.",
@@ -213,7 +217,7 @@ class Predictor(BasePredictor):
 
             futures = [
                 pool.apply_async(midify_audio, args=(
-                    name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sample_rate, output_format
+                    name, numpy_filename, midify, midify_params, save_audio_kwargs, fluidsynth_sample_rate, output_format
                 ))
                 for name, numpy_filename in filenames.items()
             ]

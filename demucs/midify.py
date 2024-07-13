@@ -6,6 +6,8 @@ import time
 import pkg_resources
 import os
 from scipy.io import wavfile
+import requests
+import json
 
 import torch
 from cog import BasePredictor, Input, Path
@@ -18,10 +20,11 @@ from basic_pitch import ICASSP_2022_MODEL_PATH
 
 import fluidsynth
 
-def midify_audio(name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sample_rate, output_format):
+def midify_audio(name, numpy_filename, midify, midify_params, save_audio_kwargs, fluidsynth_sample_rate, output_format):
     numpy_data = np.load(numpy_filename)
     os.remove(numpy_filename)
     torch_data = torch.tensor(numpy_data)
+    midify_params = json.loads(midify_params) if midify_params else {}
 
     with tempfile.NamedTemporaryFile(suffix=".wav") as f:
         save_audio(torch_data, f.name, **save_audio_kwargs)
@@ -42,17 +45,21 @@ def midify_audio(name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sam
 
             start_time = time.time()
             print("Synthesizing", name)
+
+            program = midify_params.get(name, {}).get("program", 42)
+
             samples = synthesize_midi(
                 midi_data,
-                numpy_data,
+                numpy_data.reshape(-1, 1)[:, 0],
                 sf2_path=pkg_resources.resource_filename('demucs', 'sound_fonts/gameboy.sf2'),
-                program=(6 if name == "guitar" else 42),
+                program=program,
                 should_fill=False,
                 fs=fluidsynth_sample_rate,
             )
             with tempfile.NamedTemporaryFile(suffix=f".wav") as f_inner:
                 wavfile.write(f_inner.name, fluidsynth_sample_rate, samples)
-                audio = BytesIO(open(f_inner.name, "rb").read())
+                with open(f_inner.name, "rb") as file:
+                    audio = BytesIO(file.read())
 
             print("Done synthesizing after", time.time() - start_time, "seconds")
 
@@ -129,7 +136,7 @@ def synthesize_instrument(
     # Collect all notes in one list
     event_list = []
     for note in transform_notes(instrument.notes) if should_fill else instrument.notes:
-        nearby_audio_data = audio_data[int(fs * 2 * note.start):int(fs * 2 * note.end)]
+        nearby_audio_data = audio_data[int(fs * note.start):int(fs * note.end)]
         # check if every entry is very quiet 
         if np.all(nearby_audio_data < 0.01):
             continue
