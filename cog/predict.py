@@ -11,7 +11,7 @@ from demucs.apply import BagOfModels
 from demucs.htdemucs import HTDemucs
 from demucs.pretrained import get_model
 from demucs.repo import AnyModel
-from demucs.midify import midify_audio
+from midify import midify_audio
 
 # The demucs API does have a method to get all models but it
 # returns models we don't want so it's easier to manually curate

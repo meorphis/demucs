@@ -5,7 +5,6 @@ from typing import Optional
 import time
 import pkg_resources
 import os
-from scipy.io import wavfile
 
 import torch
 from cog import BasePredictor, Input, Path
@@ -48,16 +47,17 @@ def midify_audio(name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sam
             should_fill=False,
             fs=fluidsynth_sample_rate,
         )
-        with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
-            wavfile.write(f.name, fluidsynth_sample_rate, samples)
-            audio = BytesIO(open(f.name, "rb").read())
-
+        save_audio_kwargs["samplerate"] = fluidsynth_sample_rate
         print("Done synthesizing after", time.time() - start_time, "seconds")
 
-    else:
-        with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
-            save_audio(torch_data, f.name, **save_audio_kwargs)
-            audio = BytesIO(open(f.name, "rb").read())
+        print(torch_data.shape)
+        print(samples.shape)
+
+        torch_data = torch.from_numpy(samples.reshape(1, -1)).float()
+
+    with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
+        save_audio(torch_data, f.name, **save_audio_kwargs)
+        audio = BytesIO(open(f.name, "rb").read())
         
     return name, audio
 
