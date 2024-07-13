@@ -23,11 +23,13 @@ def midify_audio(name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sam
     os.remove(numpy_filename)
     torch_data = torch.tensor(numpy_data)
 
-    if midify:
-        start_time = time.time()
-        print("Midifying", name)
-        with tempfile.NamedTemporaryFile(suffix=".wav") as f:
-            save_audio(torch_data, f.name, **save_audio_kwargs)
+    with tempfile.NamedTemporaryFile(suffix=".wav") as f:
+        save_audio(torch_data, f.name, **save_audio_kwargs)
+
+        if midify:
+            start_time = time.time()
+            print("Midifying", name)
+
             model_output, midi_data, note_events = predict(
                 f.name,
                 Model(ICASSP_2022_MODEL_PATH),
@@ -36,27 +38,25 @@ def midify_audio(name, numpy_filename, midify, save_audio_kwargs, fluidsynth_sam
                 minimum_frequency=50,
                 maximum_frequency=30000
             )
-        print("Done midifying after", time.time() - start_time, "seconds")
+            print("Done midifying after", time.time() - start_time, "seconds")
 
-        start_time = time.time()
-        print("Synthesizing", name)
-        samples = synthesize_midi(
-            midi_data,
-            numpy_data,
-            sf2_path=pkg_resources.resource_filename('demucs', 'sound_fonts/gameboy.sf2'),
-            program=(6 if name == "guitar" else 42),
-            should_fill=False,
-            fs=fluidsynth_sample_rate,
-        )
-        with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
-            wavfile.write(f.name, fluidsynth_sample_rate, samples)
-            audio = BytesIO(open(f.name, "rb").read())
+            start_time = time.time()
+            print("Synthesizing", name)
+            samples = synthesize_midi(
+                midi_data,
+                numpy_data,
+                sf2_path=pkg_resources.resource_filename('demucs', 'sound_fonts/gameboy.sf2'),
+                program=(6 if name == "guitar" else 42),
+                should_fill=False,
+                fs=fluidsynth_sample_rate,
+            )
+            with tempfile.NamedTemporaryFile(suffix=f".wav") as f_inner:
+                wavfile.write(f_inner.name, fluidsynth_sample_rate, samples)
+                audio = BytesIO(open(f_inner.name, "rb").read())
 
-        print("Done synthesizing after", time.time() - start_time, "seconds")
+            print("Done synthesizing after", time.time() - start_time, "seconds")
 
-    else:
-        with tempfile.NamedTemporaryFile(suffix=f".{output_format}") as f:
-            save_audio(torch_data, f.name, **save_audio_kwargs)
+        else:
             audio = BytesIO(open(f.name, "rb").read())
         
     return name, audio
