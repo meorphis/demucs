@@ -33,27 +33,35 @@ def midify_audio(name, numpy_filename, midify, midify_params, save_audio_kwargs,
             start_time = time.time()
             print("Midifying", name)
 
+            instrument_params = midify_params.get(name, {})
+            minimum_note_length = instrument_params.get("minimum_note_length", 63)
+            onset_threshold = instrument_params.get("onset_threshold", 0.5)
+            frame_threshold = instrument_params.get("frame_threshold", 0.3)
+
             model_output, midi_data, note_events = predict(
                 f.name,
                 Model(ICASSP_2022_MODEL_PATH),
-                minimum_note_length=63,
+                minimum_note_length=minimum_note_length,
                 multiple_pitch_bends=True,
                 minimum_frequency=50,
-                maximum_frequency=30000
+                maximum_frequency=30000,
+                onset_threshold=onset_threshold,
+                frame_threshold=frame_threshold,
             )
             print("Done midifying after", time.time() - start_time, "seconds")
 
             start_time = time.time()
             print("Synthesizing", name)
 
-            program = midify_params.get(name, {}).get("program", 42)
+            program = instrument_params.get("program", 42)
+            should_fill = instrument_params.get("should_fill", False)
 
             samples = synthesize_midi(
                 midi_data,
                 numpy_data.reshape(-1, 1)[:, 0],
                 sf2_path=pkg_resources.resource_filename('demucs', 'sound_fonts/gameboy.sf2'),
                 program=program,
-                should_fill=False,
+                should_fill=should_fill,
                 fs=fluidsynth_sample_rate,
             )
             with tempfile.NamedTemporaryFile(suffix=f".wav") as f_inner:
